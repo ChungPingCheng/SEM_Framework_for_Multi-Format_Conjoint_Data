@@ -1,0 +1,40 @@
+TITLE: Mixed-format model (binary + paired comparisons)
+
+DATA:
+  FILE = mixed_data.txt;
+
+VARIABLE:
+  NAMES = B1 B2 B3 B4 P1_2 P1_3 P1_4 P2_3 P2_4 P3_4;
+  USEVARIABLES = B1 B2 B3 B4 P1_2 P1_3 P1_4 P2_3 P2_4 P3_4;
+  CATEGORICAL = B1 B2 B3 B4 P1_2 P1_3 P1_4 P2_3 P2_4 P3_4;
+
+ANALYSIS:
+  ESTIMATOR = WLSMV;
+  PARAMETERIZATION = THETA;
+
+MODEL:
+  ! Structured preferences (second layer; shared by both formats)
+  Y1 BY B1@1       P1_2@ 1 P1_3@ 1 P1_4@ 1;
+  Y2 BY B2@1       P1_2@-1 P2_3@ 1 P2_4@ 1;
+  Y3 BY B3@1       P1_3@-1 P2_3@-1 P3_4@ 1;
+  Y4 BY B4@1       P1_4@-1 P2_4@-1 P3_4@-1;
+
+  [Y1-Y4@0];
+  Y1-Y4@0;                                  ! no residuals at structured layer
+
+  ! Part-worth factors (first layer)
+  f0 BY Y1@1 Y2@1 Y3@1 Y4@1;                ! baseline (affects binary; cancels in pairwise)
+  f1 BY Y1@-1 Y2@ 1 Y3@-1 Y4@ 1;
+  f2 BY Y1@-1 Y2@-1 Y3@ 1 Y4@ 1;
+
+  [f0@0 f1 f2];                             ! choose identification: baseline mean = 0
+  f1@1; f0 f2; f1 WITH f2; f0 WITH f1; f0 WITH f2;
+
+  ! Thresholds: binary free; pairwise fixed at 0
+  [B1$1 B2$1 B3$1 B4$1] (tau);
+  [P1_2$1-P3_4$1@0];
+
+  B1-B4 P1_2-P3_4;                          ! allow residuals at item/comparison level
+
+OUTPUT:
+  STANDARDIZED RESIDUAL TECH1 TECH4;

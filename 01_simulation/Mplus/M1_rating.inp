@@ -1,0 +1,27 @@
+TITLE: Rating model (two-layer; loadings fixed by design)
+
+DATA:
+  FILE = rating_data.txt;
+
+VARIABLE:
+  NAMES = RT1 RT2 RT3 RT4;
+  USEVARIABLES = RT1 RT2 RT3 RT4;
+
+ANALYSIS:
+  ESTIMATOR = ML;
+
+MODEL:
+  ! Part-worth factors (first layer)
+  f0 BY RT1@1 RT2@1 RT3@1 RT4@1;          ! baseline factor (all +1)
+  f1 BY RT1@-1 RT2@ 1 RT3@-1 RT4@ 1;      ! attribute 1 (effect/dummy-coded pattern)
+  f2 BY RT1@-1 RT2@-1 RT3@ 1 RT4@ 1;      ! attribute 2
+
+  ! Identification (choose one of the two; here use item intercepts = 0)
+  [RT1-RT4@0];                             ! item intercepts fixed at 0
+  [f0 f1 f2];                              ! factor means free (or fix [f0@0] and free item intercepts)
+
+  f1@1;                                    ! fix at least one latent variance
+  f0 f2; f1 WITH f2; f0 WITH f1; f0 WITH f2;
+
+OUTPUT:
+  SAMPSTAT STANDARDIZED RESIDUAL TECH1 TECH4;
