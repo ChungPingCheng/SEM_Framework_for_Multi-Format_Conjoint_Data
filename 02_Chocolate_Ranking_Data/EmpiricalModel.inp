@@ -1,0 +1,78 @@
+TITLE: SEMWISE Model on Pairwise Preferences;
+
+DATA:
+  FILE IS chocolate1.txt;
+
+VARIABLE:
+  NAMES ARE 
+    i1_i7 i1_i8 i1_i10 i1_i12 i1_i14 i1_i15 i1_i16
+    i7_i8 i7_i10 i7_i12 i7_i14 i7_i15 i7_i16
+    i8_i10 i8_i12 i8_i14 i8_i15 i8_i16
+    i10_i12 i10_i14 i10_i15 i10_i16
+    i12_i14 i12_i15 i12_i16
+    i14_i15 i14_i16
+    i15_i16;
+
+  USEVARIABLES ARE 
+    i1_i7 i1_i8 i1_i10 i1_i12 i1_i14 i1_i15 i1_i16
+    i7_i8 i7_i10 i7_i12 i7_i14 i7_i15 i7_i16
+    i8_i10 i8_i12 i8_i14 i8_i15 i8_i16
+    i10_i12 i10_i14 i10_i15 i10_i16
+    i12_i14 i12_i15 i12_i16
+    i14_i15 i14_i16
+    i15_i16;
+
+  CATEGORICAL ARE 
+    i1_i7 i1_i8 i1_i10 i1_i12 i1_i14 i1_i15 i1_i16
+    i7_i8 i7_i10 i7_i12 i7_i14 i7_i15 i7_i16
+    i8_i10 i8_i12 i8_i14 i8_i15 i8_i16
+    i10_i12 i10_i14 i10_i15 i10_i16
+    i12_i14 i12_i15 i12_i16
+    i14_i15 i14_i16
+    i15_i16;
+
+ANALYSIS:
+  PARAMETERIZATION = THETA;   ! Use theta parameterization for categorical indicators
+  ESTIMATOR = WLSMV;          ! Use robust estimator for categorical data
+
+MODEL:
+
+  ! Define first-order latent preference variables for 8 products
+  i1  BY i1_i7@1  i1_i8@1  i1_i10@1  i1_i12@1  i1_i14@1  i1_i15@1  i1_i16@1;
+  i7  BY i1_i7@-1 i7_i8@1  i7_i10@1  i7_i12@1  i7_i14@1  i7_i15@1  i7_i16@1;
+  i8  BY i1_i8@-1 i7_i8@-1 i8_i10@1  i8_i12@1  i8_i14@1  i8_i15@1  i8_i16@1;
+  i10 BY i1_i10@-1 i7_i10@-1 i8_i10@-1 i10_i12@1 i10_i14@1 i10_i15@1 i10_i16@1;
+  i12 BY i1_i12@-1 i7_i12@-1 i8_i12@-1 i10_i12@-1 i12_i14@1 i12_i15@1 i12_i16@1;
+  i14 BY i1_i14@-1 i7_i14@-1 i8_i14@-1 i10_i14@-1 i12_i14@-1 i14_i15@1 i14_i16@1;
+  i15 BY i1_i15@-1 i7_i15@-1 i8_i15@-1 i10_i15@-1 i12_i15@-1 i14_i15@-1 i15_i16@1;
+  i16 BY i1_i16@-1 i7_i16@-1 i8_i16@-1 i10_i16@-1 i12_i16@-1 i14_i16@-1 i15_i16@-1;
+
+  ! Fix means and variances of first-order factors to zero (identified via scaling indicators)
+  i1-i16@0;
+  [i1-i16@0];
+
+  ! Define second-order or conceptual latent constructs (alternative groupings)
+  k1  BY i8@1  i14@1;                  ! e.g., 'kitchen' attributes
+  k2  BY i12@1 i16@1;                  ! e.g., 'shelf-life' attributes
+  k3  BY i1@1  i10@1;                  ! e.g., 'classic' attributes
+
+  pr BY i10@1 i14@1 i15@1 i16@1;      ! e.g., 'premium' products
+
+  w  BY i7@1  i10@1 i12@1 i14@1;      ! e.g., 'well-known' cluster
+
+  c   BY i7@1  i8@1  i10@1 i14@1;      ! general preference core
+
+  ! Fix means of second-order latent variables to zero (default identification)
+  [k1 k2 k3 pr w c];
+
+  ! Fix variance of one higher-order factor for identification
+  w@1;
+
+  ! Set all thresholds for binary indicators to zero (probit link default)
+  [i1_i7$1-i15_i16$1@0]; 
+
+  ! Free residual variances (required for theta parameterization with categorical data)
+  i1_i7-i15_i16;
+
+OUTPUT:
+  SAMPSTAT RESIDUAL;   ! Request sample statistics and residuals
