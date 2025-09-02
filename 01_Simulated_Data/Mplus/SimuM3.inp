@@ -1,0 +1,38 @@
+TITLE: Paired-comparison model (difference of structured preferences)
+
+DATA:
+  FILE = pairwise_data.txt;
+
+VARIABLE:
+  NAMES = P1_2 P1_3 P1_4 P2_3 P2_4 P3_4;
+  USEVARIABLES = P1_2 P1_3 P1_4 P2_3 P2_4 P3_4;
+  CATEGORICAL = P1_2 P1_3 P1_4 P2_3 P2_4 P3_4;
+
+ANALYSIS:
+  ESTIMATOR = WLSMV;
+  PARAMETERIZATION = THETA;
+
+MODEL:
+  ! Structured preferences (second layer; no residuals)
+  ! Each pairwise item loads +1 on winner Y and -1 on loser Y
+  Y1 BY P1_2@ 1 P1_3@ 1 P1_4@ 1;           ! product 1 vs others
+  Y2 BY P1_2@-1 P2_3@ 1 P2_4@ 1;           ! product 2 vs others
+  Y3 BY P1_3@-1 P2_3@-1 P3_4@ 1;           ! product 3 vs others
+  Y4 BY P1_4@-1 P2_4@-1 P3_4@-1;           ! product 4 vs others
+
+  [Y1-Y4@0];                                ! no intercepts at structured layer
+  Y1-Y4@0;                                  ! no residual variance at structured layer
+
+  ! Part-worth factors (first layer) – baseline f0 excluded (cancels in differences)
+  f1 BY Y1@-1 Y2@ 1 Y3@-1 Y4@ 1;            ! attribute 1 pattern across products
+  f2 BY Y1@-1 Y2@-1 Y3@ 1 Y4@ 1;            ! attribute 2
+
+  [f1 f2];                                  ! factor means free
+  f1@1; f2; f1 WITH f2;
+
+  ! Thresholds for pairwise indicators fixed at 0; no item intercepts
+  [P1_2$1-P3_4$1@0];
+  P1_2-P3_4;                                ! allow residuals at comparison level
+
+OUTPUT:
+  STANDARDIZED RESIDUAL TECH1 TECH4;
