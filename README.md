@@ -10,8 +10,8 @@ The project provides **all simulation and empirical analysis code** (R and Mplus
 
 ## Contents
 
-- **`/simulation/`**  
-  R and Mplus scripts for the simulation study, covering six conditions:  
+- **`/01_simulation/`**  
+  Scripts and data for the simulation study, covering six response formats:
   - Ratings  
   - Binary yes/no choices  
   - Paired comparisons  
@@ -19,28 +19,31 @@ The project provides **all simulation and empirical analysis code** (R and Mplus
   - Categorical choices  
   - Mixed-format responses  
 
-- **`/empirical/`**  
-  R scripts and data for the chocolate preference dataset (87 respondents × 16 profiles, transformed into rankings and pairwise comparisons).  
-
-- **`/data/`**  
-  - Simulation design matrices and generated datasets  
-  - Chocolate dataset (subset of the *conjoint* R package, Bak & Bartlomowicz, 2012)  
+- **`/02_chocolate/`**  
+  Scripts and data for the empirical study on chocolate preferences (87 respondents × 8 profiles, transformed into rankings and pairwise comparisons).  
 
 ---
 
 ## Reproducing the Analyses
 
 ### Simulation Study
-1. Run `simulation/generate_data.R` to create synthetic datasets.  
-2. Use `simulation/analyze_lavaan.R` or `simulation/analyze_mplus.inp` to estimate models.  
-3. Compare outputs to Table 4 in the manuscript.
+
+1. Run `01_simulation/data/simulate_conjoint_data.R` to generate synthetic datasets.  
+2. Use either:
+   - `01_simulation/MPLUS/Mx_xxx.inp` (Mplus)  
+   - `01_simulation/lavaan/Mx_xxx.R` (R/lavaan)  
+   to estimate the corresponding models for each response format.
 
 ### Empirical Illustration
-1. Run `empirical/chocolate_prepare.R` to convert rankings into pairwise comparisons.  
-2. Run `empirical/chocolate_sem.R` for SEM estimation in `lavaan`.  
-3. Results correspond to Table 5 in the manuscript.
+
+1. Run `02_chocolate/data/EmpiricalDataManagement.R` to prepare the chocolate dataset and derive pairwise comparisons.  
+2. Use either:
+   - `02_chocolate/MPLUS/chocolate.inp` (Mplus)  
+   - `02_chocolate/lavaan/chocolate.R` (R/lavaan)  
+   to estimate the final SEM model.
 
 ---
+
 
 ## Requirements
 
