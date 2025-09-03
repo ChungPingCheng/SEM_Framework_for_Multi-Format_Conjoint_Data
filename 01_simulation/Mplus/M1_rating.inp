@@ -1,0 +1,51 @@
+TITLE: Rating model for 2-attribute 4-profile design
+       Structured part-worth utilities with fixed factor loadings
+
+DATA:
+  FILE = ../data/rating_data.txt;
+
+VARIABLE:
+  NAMES ARE RT1 RT2 RT3 RT4;
+  USEVARIABLES ARE RT1 RT2 RT3 RT4;
+
+ANALYSIS:
+  ESTIMATOR = ML;
+
+MODEL:
+
+  ! ------------------------------------------------------
+  ! A) First-order latent utilities (structured part-worths)
+  !    f0: general liking across all profiles (baseline)
+  !    f1: effect-coded pattern for Attribute 1
+  !    f2: effect-coded pattern for Attribute 2
+  !    All factor loadings are fixed by design
+  ! ------------------------------------------------------
+
+  f0 BY RT1@1  RT2@1  RT3@1  RT4@1;         ! overall liking
+  f1 BY RT1@-1 RT2@1  RT3@-1 RT4@1;         ! attribute 1 contrast
+  f2 BY RT1@-1 RT2@-1 RT3@1  RT4@1;         ! attribute 2 contrast
+
+  ! ------------------------------------------------------
+  ! B) Model identification and scaling
+  !    Option: fix factor means to 0, let item intercepts free
+  !    Alternatively, could fix item intercepts and let factor means vary
+  !    This version fixes factor means (natural for simulated data)
+  ! ------------------------------------------------------
+
+  [RT1-RT4](c);                    ! intercepts of observed ratings (free)
+  [f0@0 f1 f2];                    ! fix means of f0 
+
+  ! ------------------------------------------------------
+  ! C) Covariances among latent part-worths
+  !    Allow full covariances among f0, f1, f2
+  ! ------------------------------------------------------
+
+  f0 WITH f1;
+  f0 WITH f2;
+  f1 WITH f2;
+
+  ! Alternatively:  f0 f1 f2;   (same result, shorthand)
+
+OUTPUT:
+  SAMPSTAT STANDARDIZED MODINDICES;
+

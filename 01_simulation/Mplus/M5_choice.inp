@@ -1,0 +1,55 @@
+TITLE: Choice model (pairwise-reconstructed utilities from choices)
+       3-layer SEM using binary pairwise wins derived from forced choice
+
+DATA:
+  FILE = ../data/choices_data.txt;
+
+VARIABLE:
+  NAMES = C1 C2 C3 C4 P1_2 P1_3 P1_4 P2_3 P2_4 P3_4;
+  USEVARIABLES = P1_2 P1_3 P1_4 P2_3 P2_4 P3_4;
+  CATEGORICAL = P1_2 P1_3 P1_4 P2_3 P2_4 P3_4;
+  MISSING = ALL (999);
+
+ANALYSIS:
+  ESTIMATOR = WLSMV;
+  PARAMETERIZATION = THETA;
+
+MODEL:
+
+  ! ------------------------------------------------------
+  ! A) Structured preferences for 4 products (Y1¡VY4)
+  !    Pairwise wins derived from ranking converted to binary outcomes
+  !    Each item loads +1 on "winner", -1 on "loser" structured factor
+  ! ------------------------------------------------------
+
+  Y1 BY P1_2@ 1 P1_3@ 1 P1_4@ 1;   ! product 1 vs products 2,3,4
+  Y2 BY P1_2@-1 P2_3@ 1 P2_4@ 1;   ! product 2 vs products 1,3,4
+  Y3 BY P1_3@-1 P2_3@-1 P3_4@ 1;   ! product 3 vs products 1,2,4
+  Y4 BY P1_4@-1 P2_4@-1 P3_4@-1;   ! product 4 vs products 1,2,3
+
+  [Y1-Y4@0];       ! fix latent structured utility means (identification)
+  Y1-Y4@0;         ! fix latent residual variances to zero
+
+  ! ------------------------------------------------------
+  ! B) Part-worth factors for underlying attributes
+  !    Loadings fixed by design (effect-coded contrasts)
+  ! ------------------------------------------------------
+
+  f1 BY Y1@-1 Y2@ 1 Y3@-1 Y4@ 1;   ! attribute 1 contrast pattern
+  f2 BY Y1@-1 Y2@-1 Y3@ 1 Y4@ 1;   ! attribute 2 contrast pattern
+
+  [f1 f2];       ! free means
+  f1@1;          ! fix variance of f1 to 1 for scale
+  f2;            ! estimate variance of f2
+  f1 WITH f2;    ! estimate correlation between attributes
+
+  ! ------------------------------------------------------
+  ! C) Binary indicators derived from ranking: thresholds & residuals
+  ! ------------------------------------------------------
+
+  [P1_2$1-P3_4$1@0];   ! fix thresholds (probit link)
+  P1_2-P3_4;           ! estimate residual variances (theta param)
+
+OUTPUT:
+  STANDARDIZED MODINDICES;
+

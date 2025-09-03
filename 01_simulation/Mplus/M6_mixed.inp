@@ -1,0 +1,56 @@
+TITLE: Mixed-format model (binary + paired comparisons)
+       Joint modeling of direct yes/no responses and pairwise comparisons
+
+DATA:
+  FILE = ../data/binary_pairwise_data.txt;
+
+VARIABLE:
+  NAMES ARE B1 B2 B3 B4 P1_2 P1_3 P1_4 P2_3 P2_4 P3_4;
+  USEVARIABLES ARE B1 B2 B3 B4 P1_2 P1_3 P1_4 P2_3 P2_4 P3_4;
+  CATEGORICAL ARE B1 B2 B3 B4 P1_2 P1_3 P1_4 P2_3 P2_4 P3_4;
+
+ANALYSIS:
+  ESTIMATOR = WLSMV;
+  PARAMETERIZATION = THETA;
+
+MODEL:
+
+  ! ------------------------------------------------------
+  ! A) Structured latent preferences (Y1¡VY4)
+  !    Each product loads on its own binary indicator (+1)
+  !    and on pairwise comparisons (+1 if winner, -1 if loser)
+  ! ------------------------------------------------------
+
+  Y1 BY B1@1       P1_2@ 1 P1_3@ 1 P1_4@ 1;
+  Y2 BY B2@1       P1_2@-1 P2_3@ 1 P2_4@ 1;
+  Y3 BY B3@1       P1_3@-1 P2_3@-1 P3_4@ 1;
+  Y4 BY B4@1       P1_4@-1 P2_4@-1 P3_4@-1;
+
+  [Y1-Y4@0];      ! fix latent means
+  Y1-Y4@0;        ! fix residual variances (identified by design)
+
+  ! ------------------------------------------------------
+  ! B) Part-worth latent utilities (attribute-level)
+  !    f0 = baseline, f1/f2 = attributes; f0 cancels in pairwise
+  ! ------------------------------------------------------
+
+  f0 BY Y1@1 Y2@1 Y3@1 Y4@1;        ! baseline level
+  f1 BY Y1@-1 Y2@ 1 Y3@-1 Y4@ 1;    ! attribute 1
+  f2 BY Y1@-1 Y2@-1 Y3@ 1 Y4@ 1;    ! attribute 2
+
+  [f0@0 f1 f2];                    ! fix f0 mean, estimate f1/f2
+  f1@1;                            ! fix f1 variance
+  f0 f2;                           ! estimate f0 and f2 variances
+  f1 WITH f2; f0 WITH f1; f0 WITH f2;
+
+  ! ------------------------------------------------------
+  ! C) Thresholds and residual variances
+  ! ------------------------------------------------------
+
+  [B1$1 B2$1 B3$1 B4$1] (tau);     ! free thresholds for binary items
+  [P1_2$1-P3_4$1@0];              ! fix thresholds for pairwise items
+
+  B1-B4 P1_2-P3_4;                ! estimate residual variances
+
+OUTPUT:
+  STANDARDIZED MODINDICES;

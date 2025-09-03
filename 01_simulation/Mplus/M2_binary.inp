@@ -1,0 +1,51 @@
+TITLE: Binary yes/no model (structured part-worth utilities)
+       Fixed factor loadings with threshold-based observation layer
+
+DATA:
+  FILE = ../data/binary_data.txt;
+
+VARIABLE:
+  NAMES ARE B1 B2 B3 B4;
+  USEVARIABLES ARE B1 B2 B3 B4;
+  CATEGORICAL ARE B1 B2 B3 B4;
+
+ANALYSIS:
+  ESTIMATOR = WLSMV;
+  PARAMETERIZATION = THETA;
+
+MODEL:
+
+  ! ------------------------------------------------------
+  ! A) First-order latent utilities (structured part-worths)
+  !    f0: general preference level (baseline)
+  !    f1: attribute 1 part-worth (effect-coded)
+  !    f2: attribute 2 part-worth (effect-coded)
+  !    All loadings are fixed by design.
+  ! ------------------------------------------------------
+
+  f0 BY B1@1  B2@1  B3@1  B4@1;
+  f1 BY B1@-1 B2@1  B3@-1 B4@1;
+  f2 BY B1@-1 B2@-1 B3@1  B4@1;
+
+  ! ------------------------------------------------------
+  ! B) Threshold identification strategy
+  !    Common threshold estimated across all items (tau)
+  !    Factor mean of f0 is fixed to 0 (scale anchor)
+  ! ------------------------------------------------------
+
+  [B1$1 B2$1 B3$1 B4$1](tau);    ! freely estimate threshold (shared or individual)
+  [f0@0 f1 f2];                  ! baseline mean fixed to 0; others freely estimated
+
+  ! ------------------------------------------------------
+  ! C) Latent variances and covariances
+  !    Fix one latent variance (f1) to identify scale
+  ! ------------------------------------------------------
+
+  f1@1;                         ! fix variance for f1 to identify model
+  f0 f2;                        ! estimate variances for f0 and f2
+  f1 WITH f2;
+  f0 WITH f1;
+  f0 WITH f2;
+
+OUTPUT:
+  SAMPSTAT STANDARDIZED MODINDICES;
