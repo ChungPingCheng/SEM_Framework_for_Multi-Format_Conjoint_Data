@@ -4,7 +4,7 @@ This repository accompanies the manuscript:
 
 > **Cheng, C.-P. (2025). Modeling Diverse Response Formats in Conjoint Analysis: An Integrated SEM Framework from Ratings to Choices.**
 
-The project provides **all simulation and empirical analysis code** (R and Mplus) as well as the associated data files. This ensures full reproducibility of results reported in the paper, including Tables 1–5.
+The project provides **all simulation and empirical analysis code** (R and Mplus) as well as the associated data files. This ensures full reproducibility of results reported in the paper, including Tables 4–5.
 
 ---
 
