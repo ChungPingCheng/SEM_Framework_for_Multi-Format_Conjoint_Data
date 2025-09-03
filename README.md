@@ -20,7 +20,7 @@ The project provides **all simulation and empirical analysis code** (R and Mplus
   - Mixed-format responses  
 
 - **`/02_chocolate/`**  
-  Scripts and data for the empirical study on chocolate preferences (87 respondents × 8 profiles, transformed into rankings and pairwise comparisons).  
+  Scripts and data for the empirical study on chocolate preferences (87 respondents × 8 profiles, transformed into pairwise comparisons).  
 
 ---
 
